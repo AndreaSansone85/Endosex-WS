@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>The EndoSex Working Space</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --surface:#ffffff; --surface-2:#eceef1; --border:#d8dbe0;
+    --text:#1f2328; --text-soft:#5b6270; --accent:#3f5063; --accent-soft:#e7ebf0;
+    --ok:#3d7a5a; --warn:#9a7b2e; --danger:#a4483f; --shadow:0 1px 3px rgba(0,0,0,.08);
+    --radius:12px;
+  }
+  html[data-theme="dark"]{
+    --bg:#15171b; --surface:#1e2126; --surface-2:#262a31; --border:#333842;
+    --text:#e7e9ec; --text-soft:#a0a6b0; --accent:#8fa6bd; --accent-soft:#2a303a;
+    --ok:#6fb58e; --warn:#d6b45a; --danger:#e08079; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+  button{font:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface);
+    color:var(--text);border-radius:8px;padding:.5rem .8rem;transition:.15s}
+  button:hover{background:var(--surface-2)}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button.primary:hover{filter:brightness(1.08)}
+  button.ghost{border-color:transparent;background:transparent}
+  button.tiny{padding:.25rem .5rem;font-size:.8rem}
+  input,textarea,select{font:inherit;color:var(--text);background:var(--surface);
+    border:1px solid var(--border);border-radius:8px;padding:.55rem .7rem;width:100%}
+  textarea{resize:vertical;min-height:70px}
+  a{color:var(--accent)}
+  .hidden{display:none!important}
+  .muted{color:var(--text-soft)}
+  .small{font-size:.82rem}
+  .row{display:flex;gap:.5rem;align-items:center}
+  .wrap{flex-wrap:wrap}
+  .grow{flex:1}
+  .stack{display:flex;flex-direction:column;gap:.6rem}
+  .badge{display:inline-block;min-width:18px;text-align:center;background:var(--danger);
+    color:#fff;border-radius:999px;padding:0 6px;font-size:.72rem;font-weight:600}
+  .pill{display:inline-block;padding:.1rem .5rem;border-radius:999px;font-size:.72rem;
+    background:var(--surface-2);color:var(--text-soft);border:1px solid var(--border)}
+  .pill.todo{color:var(--warn)} .pill.in_progress{color:var(--accent)} .pill.done{color:var(--ok)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:.9rem;box-shadow:var(--shadow)}
+
+  /* Top bar */
+  header{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--border);
+    padding:.55rem .9rem;display:flex;gap:.6rem;align-items:center;
+    padding-top:calc(.55rem + env(safe-area-inset-top))}
+  header h1{font-size:1rem;margin:0;font-weight:650;letter-spacing:.2px;white-space:nowrap}
+  header .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--text-soft));
+    display:grid;place-items:center;color:#fff;font-weight:700;font-size:.8rem;flex:none}
+  .iconbtn{border:1px solid var(--border);background:var(--surface);border-radius:8px;
+    width:38px;height:38px;display:grid;place-items:center;padding:0;font-size:1rem;position:relative}
+  .iconbtn .badge{position:absolute;top:-6px;right:-6px}
+
+  /* Layout */
+  main{max-width:1100px;margin:0 auto;padding:1rem .9rem 4rem}
+  nav.tabs{display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap}
+  nav.tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .split{display:grid;grid-template-columns:300px 1fr;gap:1rem;align-items:start}
+  @media(max-width:760px){ .split{grid-template-columns:1fr} header h1{font-size:.9rem} }
+
+  .listitem{width:100%;text-align:left;display:flex;flex-direction:column;gap:.15rem;align-items:flex-start}
+  .listitem.active{background:var(--accent-soft);border-color:var(--accent)}
+  .task{border:1px solid var(--border);border-radius:10px;padding:.7rem;background:var(--surface);margin-bottom:.6rem}
+  .task.done{opacity:.7}
+  .task h4{margin:0 0 .2rem}
+  .avatar{width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
+    display:inline-grid;place-items:center;font-size:.7rem;font-weight:700;border:1px solid var(--border)}
+
+  /* Auth */
+  .auth-wrap{min-height:80vh;display:grid;place-items:center;padding:1rem}
+  .auth-card{width:100%;max-width:360px}
+
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;z-index:50;padding:1rem}
+  .modal{width:100%;max-width:460px;max-height:90vh;overflow:auto}
+  .toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);z-index:60;
+    background:var(--text);color:var(--bg);padding:.6rem 1rem;border-radius:10px;box-shadow:var(--shadow);
+    max-width:90vw}
+  label.field{display:block;margin-bottom:.15rem;font-size:.82rem;color:var(--text-soft)}
+</style>
+</head>
+<body>
+
+<!-- ==================== TOP BAR ==================== -->
+<header id="topbar" class="hidden">
+  <div class="logo">ES</div>
+  <h1>The EndoSex Working Space</h1>
+  <div class="grow"></div>
+  <button class="iconbtn" id="btnLang" title="Language">IT</button>
+  <button class="iconbtn" id="btnTheme" title="Theme">🌙</button>
+  <button class="iconbtn" id="btnNotif" title="Notifiche">🔔<span class="badge hidden" id="notifCount">0</span></button>
+  <button class="iconbtn" id="btnLogout" title="Logout">⎋</button>
+</header>
+
+<!-- ==================== AUTH ==================== -->
+<div id="authView" class="auth-wrap">
+  <div class="card auth-card stack">
+    <div class="row"><div class="logo">ES</div><h1 style="margin:0;font-size:1.05rem">The EndoSex Working Space</h1></div>
+    <p class="muted small" id="authTagline"></p>
+    <div>
+      <label class="field" id="lblEmail">Email</label>
+      <input id="email" type="email" autocomplete="username" />
+    </div>
+    <div>
+      <label class="field" id="lblPassword">Password</label>
+      <input id="password" type="password" autocomplete="current-password" />
+    </div>
+    <button class="primary" id="btnLogin">Login</button>
+    <p class="small danger hidden" id="authError" style="color:var(--danger)"></p>
+    <div class="row" style="justify-content:space-between">
+      <button class="ghost tiny" id="authLang">EN</button>
+      <button class="ghost tiny" id="authTheme">🌙</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<main id="appView" class="hidden">
+  <nav class="tabs">
+    <button data-tab="lists" class="active" id="tabLists"></button>
+    <button data-tab="notes" id="tabNotes"></button>
+    <button data-tab="tools" id="tabTools"></button>
+  </nav>
+
+  <!-- TAB: LISTS -->
+  <section id="panel-lists">
+    <div class="split">
+      <div class="stack">
+        <button class="primary" id="btnNewList"></button>
+        <div class="stack" id="listsContainer"></div>
+      </div>
+      <div id="listDetail" class="stack"></div>
+    </div>
+  </section>
+
+  <!-- TAB: NOTES -->
+  <section id="panel-notes" class="hidden stack">
+    <div class="card stack">
+      <input id="noteTitle" />
+      <textarea id="noteContent"></textarea>
+      <div class="row"><button class="primary" id="btnAddNote"></button></div>
+    </div>
+    <div class="stack" id="notesContainer"></div>
+  </section>
+
+  <!-- TAB: TOOLS -->
+  <section id="panel-tools" class="hidden stack">
+    <div class="card stack">
+      <div class="row wrap">
+        <input id="toolName" style="flex:1 1 180px" />
+        <input id="toolUrl" style="flex:2 1 240px" />
+      </div>
+      <input id="toolDesc" />
+      <div class="row"><button class="primary" id="btnAddTool"></button></div>
+    </div>
+    <div class="stack" id="toolsContainer"></div>
+  </section>
+</main>
+
+<div id="modalHost"></div>
+<div id="toastHost"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+// ============================================================================
+//  i18n
+// ============================================================================
+const I18N = {
+  it:{
+    tagline:"Spazio di lavoro condiviso del gruppo di ricerca. Accedi per continuare.",
+    email:"Email", password:"Password", login:"Accedi", loggingIn:"Accesso…",
+    tabLists:"Elenchi & Task", tabNotes:"Bloc Notes", tabTools:"Strumenti",
+    newList:"+ Nuovo elenco", noLists:"Nessun elenco visibile. Creane uno o chiedi di essere aggiunto.",
+    selectList:"Seleziona un elenco a sinistra, oppure creane uno nuovo.",
+    participants:"Partecipanti", watchers:"Spettatori", manageMembers:"Gestisci persone",
+    addTask:"+ Nuovo task", noTasks:"Nessun task in questo elenco.",
+    assignedTo:"Assegnato a", unassigned:"Non assegnato", createdBy:"Creato da",
+    created:"Creato", updated:"Modificato", due:"Scadenza", markDone:"Segna completato",
+    reopen:"Riapri", start:"In corso", del:"Elimina", edit:"Modifica",
+    statusTodo:"Da fare", statusProgress:"In corso", statusDone:"Completato",
+    linkedPrompt:"Task completato! Vuoi creare un task collegato?", createLinked:"Crea task collegato",
+    notesEmpty:"Ancora nessun appunto. Scrivi qualcosa di visibile a tutti.",
+    noteTitlePh:"Titolo (facoltativo)", noteContentPh:"Scrivi un appunto condiviso…", addNote:"Aggiungi appunto",
+    toolsEmpty:"Ancora nessuno strumento. Aggiungi i link ai tool che sviluppate.",
+    toolNamePh:"Nome strumento", toolUrlPh:"https://…", toolDescPh:"Descrizione (facoltativa)", addTool:"Aggiungi strumento",
+    notifTitle:"Notifiche", notifEmpty:"Nessuna notifica.", markAllRead:"Segna tutte come lette",
+    // modals
+    mNewListTitle:"Nuovo elenco di task", mListTitle:"Titolo dell'elenco", mListDesc:"Descrizione (facoltativa)",
+    mCreate:"Crea", mCancel:"Annulla", mSave:"Salva",
+    mNewTaskTitle:"Nuovo task", mTaskTitle:"Titolo del task", mTaskDesc:"Descrizione (facoltativa)", mDue:"Scadenza (facoltativa)",
+    mMembersTitle:"Persone dell'elenco", mAddParticipant:"Aggiungi partecipante", mAddWatcher:"Aggiungi spettatore",
+    mChoosePerson:"Scegli persona…", mRemove:"Rimuovi",
+    confirmDelTask:"Eliminare questo task?", confirmDelList:"Eliminare l'intero elenco e i suoi task?",
+    confirmDelNote:"Eliminare questo appunto?", confirmDelTool:"Eliminare questo strumento?",
+    you:"tu", admin:"admin", langName:"IT", editList:"Rinomina", deleteList:"Elimina elenco",
+    savedOk:"Salvato", assignSelf:"Assegna a me",
+  },
+  en:{
+    tagline:"Shared workspace of the research group. Sign in to continue.",
+    email:"Email", password:"Password", login:"Sign in", loggingIn:"Signing in…",
+    tabLists:"Lists & Tasks", tabNotes:"Notepad", tabTools:"Tools",
+    newList:"+ New list", noLists:"No visible lists. Create one or ask to be added.",
+    selectList:"Select a list on the left, or create a new one.",
+    participants:"Participants", watchers:"Watchers", manageMembers:"Manage people",
+    addTask:"+ New task", noTasks:"No tasks in this list.",
+    assignedTo:"Assigned to", unassigned:"Unassigned", createdBy:"Created by",
+    created:"Created", updated:"Updated", due:"Due", markDone:"Mark done",
+    reopen:"Reopen", start:"Start", del:"Delete", edit:"Edit",
+    statusTodo:"To do", statusProgress:"In progress", statusDone:"Done",
+    linkedPrompt:"Task completed! Create a linked follow-up task?", createLinked:"Create linked task",
+    notesEmpty:"No notes yet. Write something visible to everyone.",
+    noteTitlePh:"Title (optional)", noteContentPh:"Write a shared note…", addNote:"Add note",
+    toolsEmpty:"No tools yet. Add links to the tools you build.",
+    toolNamePh:"Tool name", toolUrlPh:"https://…", toolDescPh:"Description (optional)", addTool:"Add tool",
+    notifTitle:"Notifications", notifEmpty:"No notifications.", markAllRead:"Mark all as read",
+    mNewListTitle:"New task list", mListTitle:"List title", mListDesc:"Description (optional)",
+    mCreate:"Create", mCancel:"Cancel", mSave:"Save",
+    mNewTaskTitle:"New task", mTaskTitle:"Task title", mTaskDesc:"Description (optional)", mDue:"Due date (optional)",
+    mMembersTitle:"List people", mAddParticipant:"Add participant", mAddWatcher:"Add watcher",
+    mChoosePerson:"Choose person…", mRemove:"Remove",
+    confirmDelTask:"Delete this task?", confirmDelList:"Delete the whole list and its tasks?",
+    confirmDelNote:"Delete this note?", confirmDelTool:"Delete this tool?",
+    you:"you", admin:"admin", langName:"EN", editList:"Rename", deleteList:"Delete list",
+    savedOk:"Saved", assignSelf:"Assign to me",
+  }
+};
+let LANG = localStorage.getItem("ews_lang") || "it";
+const t = k => (I18N[LANG][k] ?? k);
+
+// ============================================================================
+//  State & Supabase client
+// ============================================================================
+let sb = null;
+const state = { user:null, profile:null, profiles:{}, lists:[], currentListId:null,
+  tasks:[], members:[], notes:[], tools:[], notifications:[], tab:"lists" };
+
+const $ = s => document.querySelector(s);
+const el = (tag, props={}, html) => { const e=document.createElement(tag); Object.assign(e,props); if(html!=null)e.innerHTML=html; return e; };
+const esc = s => (s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const initials = s => (s||"?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();
+const nameOf = id => { const p=state.profiles[id]; return p ? (p.full_name || p.username || p.email) : "?"; };
+function fmt(ts){ if(!ts) return "—"; const d=new Date(ts);
+  return d.toLocaleString(LANG==="it"?"it-IT":"en-GB",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}); }
+function toast(msg){ const h=$("#toastHost"); const d=el("div",{className:"toast"},esc(msg)); h.appendChild(d); setTimeout(()=>d.remove(),2600); }
+
+// ============================================================================
+//  Theme
+// ============================================================================
+function applyTheme(t){ document.documentElement.setAttribute("data-theme",t); localStorage.setItem("ews_theme",t);
+  const icon = t==="dark"?"☀️":"🌙"; $("#btnTheme").textContent=icon; $("#authTheme").textContent=icon; }
+function toggleTheme(){ applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"); }
+
+// ============================================================================
+//  Language
+// ============================================================================
+function applyLang(l){ LANG=l; localStorage.setItem("ews_lang",l); document.documentElement.setAttribute("lang",l);
+  $("#btnLang").textContent=I18N[l].langName; $("#authLang").textContent=(l==="it"?"EN":"IT"); renderStatic(); rerenderCurrent(); }
+function toggleLang(){ applyLang(LANG==="it"?"en":"it"); }
+
+function renderStatic(){
+  $("#authTagline").textContent=t("tagline"); $("#lblEmail").textContent=t("email");
+  $("#lblPassword").textContent=t("password"); $("#btnLogin").textContent=t("login");
+  $("#email").placeholder="nome@dominio.it"; $("#password").placeholder="••••••••";
+  $("#tabLists").textContent=t("tabLists"); $("#tabNotes").textContent=t("tabNotes"); $("#tabTools").textContent=t("tabTools");
+  $("#btnNewList").textContent=t("newList");
+  $("#noteTitle").placeholder=t("noteTitlePh"); $("#noteContent").placeholder=t("noteContentPh"); $("#btnAddNote").textContent=t("addNote");
+  $("#toolName").placeholder=t("toolNamePh"); $("#toolUrl").placeholder=t("toolUrlPh");
+  $("#toolDesc").placeholder=t("toolDescPh"); $("#btnAddTool").textContent=t("addTool");
+}
+function rerenderCurrent(){
+  if(!state.user) return;
+  renderLists(); renderListDetail(); renderNotes(); renderTools(); updateNotifBadge();
+}
+
+// ============================================================================
+//  Auth
+// ============================================================================
+async function doLogin(){
+  $("#authError").classList.add("hidden");
+  const email=$("#email").value.trim(), password=$("#password").value;
+  if(!email||!password) return;
+  $("#btnLogin").textContent=t("loggingIn"); $("#btnLogin").disabled=true;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  $("#btnLogin").disabled=false; $("#btnLogin").textContent=t("login");
+  if(error){ $("#authError").textContent=error.message; $("#authError").classList.remove("hidden"); return; }
+  await onSignedIn();
+}
+async function doLogout(){ await sb.auth.signOut(); location.reload(); }
+
+async function onSignedIn(){
+  const { data:{ user } } = await sb.auth.getUser();
+  state.user = user;
+  // profilo dell'utente corrente
+  let { data:prof } = await sb.from("profiles").select("*").eq("id",user.id).single();
+  state.profile = prof;
+  $("#authView").classList.add("hidden");
+  $("#topbar").classList.remove("hidden");
+  $("#appView").classList.remove("hidden");
+  await loadProfiles();
+  await loadLists();
+  await loadNotes();
+  await loadTools();
+  await loadNotifications();
+  switchTab("lists");
+}
+
+async function loadProfiles(){
+  const { data } = await sb.from("profiles").select("*");
+  state.profiles = {}; (data||[]).forEach(p=>state.profiles[p.id]=p);
+}
+
+// ============================================================================
+//  Lists & members
+// ============================================================================
+async function loadLists(){
+  const { data } = await sb.from("task_lists").select("*").order("updated_at",{ascending:false});
+  state.lists = data||[];
+  if(state.currentListId && !state.lists.find(l=>l.id===state.currentListId)) state.currentListId=null;
+  renderLists();
+  if(state.currentListId) await selectList(state.currentListId, true);
+  else renderListDetail();
+}
+
+function renderLists(){
+  const c=$("#listsContainer"); if(!c) return; c.innerHTML="";
+  if(!state.lists.length){ c.appendChild(el("p",{className:"muted small"},esc(t("noLists")))); return; }
+  state.lists.forEach(l=>{
+    const b=el("button",{className:"card listitem"+(l.id===state.currentListId?" active":"")});
+    b.innerHTML=`<strong>${esc(l.title)}</strong>${l.description?`<span class="small muted">${esc(l.description)}</span>`:""}`;
+    b.onclick=()=>selectList(l.id);
+    c.appendChild(b);
+  });
+}
+
+async function selectList(id, keep){
+  state.currentListId=id;
+  const [{data:members},{data:tasks}] = await Promise.all([
+    sb.from("list_members").select("*").eq("list_id",id),
+    sb.from("tasks").select("*").eq("list_id",id).order("created_at",{ascending:true})
+  ]);
+  state.members=members||[]; state.tasks=tasks||[];
+  if(!keep){} renderLists(); renderListDetail();
+}
+
+function myRoleInCurrent(){
+  const m=state.members.find(m=>m.user_id===state.user.id);
+  if(state.profile?.role==="admin") return "participant";
+  return m ? m.role : null;
+}
+
+function renderListDetail(){
+  const d=$("#listDetail"); if(!d) return; d.innerHTML="";
+  const list=state.lists.find(l=>l.id===state.currentListId);
+  if(!list){ d.appendChild(el("div",{className:"card muted"},esc(t("selectList")))); return; }
+  const canEdit = myRoleInCurrent()==="participant";
+
+  // header card
+  const head=el("div",{className:"card stack"});
+  const parts=state.members.filter(m=>m.role==="participant").map(m=>chip(m.user_id)).join(" ");
+  const watch=state.members.filter(m=>m.role==="watcher").map(m=>chip(m.user_id)).join(" ");
+  head.innerHTML=`
+    <div class="row wrap" style="justify-content:space-between">
+      <div><h2 style="margin:0 0 .1rem">${esc(list.title)}</h2>
+        ${list.description?`<div class="muted small">${esc(list.description)}</div>`:""}</div>
+    </div>
+    <div class="small"><strong>${t("participants")}:</strong> ${parts||`<span class="muted">—</span>`}</div>
+    <div class="small"><strong>${t("watchers")}:</strong> ${watch||`<span class="muted">—</span>`}</div>
+    <div class="row wrap">
+      ${canEdit?`<button class="tiny" id="dBtnMembers">${t("manageMembers")}</button>`:""}
+      ${canEdit?`<button class="tiny primary" id="dBtnAddTask">${t("addTask")}</button>`:""}
+      ${canEdit?`<button class="tiny" id="dBtnRename">${t("editList")}</button>`:""}
+      ${(list.created_by===state.user.id||state.profile?.role==="admin")?`<button class="tiny" id="dBtnDelList" style="color:var(--danger)">${t("deleteList")}</button>`:""}
+    </div>`;
+  d.appendChild(head);
+  if(canEdit){
+    head.querySelector("#dBtnMembers").onclick=openMembersModal;
+    head.querySelector("#dBtnAddTask").onclick=()=>openTaskModal();
+    head.querySelector("#dBtnRename").onclick=()=>openListModal(list);
+    const delB=head.querySelector("#dBtnDelList"); if(delB) delB.onclick=()=>deleteList(list);
+  }
+
+  // tasks
+  const tc=el("div",{className:"stack"});
+  if(!state.tasks.length){ tc.appendChild(el("div",{className:"card muted small"},esc(t("noTasks")))); }
+  state.tasks.forEach(tk=>tc.appendChild(renderTask(tk,canEdit)));
+  d.appendChild(tc);
+}
+
+function chip(uid){
+  const me = uid===state.user.id;
+  return `<span class="pill"><span class="avatar" style="width:16px;height:16px;font-size:.6rem;vertical-align:middle">${esc(initials(nameOf(uid)))}</span> ${esc(nameOf(uid))}${me?" ("+t("you")+")":""}</span>`;
+}
+
+function renderTask(tk, canEdit){
+  const wrap=el("div",{className:"task"+(tk.status==="done"?" done":"")});
+  const statusLabel = tk.status==="todo"?t("statusTodo"):tk.status==="in_progress"?t("statusProgress"):t("statusDone");
+  wrap.innerHTML=`
+    <div class="row wrap" style="justify-content:space-between">
+      <h4>${esc(tk.title)}</h4>
+      <span class="pill ${tk.status}">${statusLabel}</span>
+    </div>
+    ${tk.description?`<div class="small" style="margin:.2rem 0 .4rem">${esc(tk.description)}</div>`:""}
+    <div class="small muted">
+      <span class="avatar">${esc(initials(nameOf(tk.assigned_to)))}</span>
+      ${t("assignedTo")}: <strong>${tk.assigned_to?esc(nameOf(tk.assigned_to)):t("unassigned")}</strong>
+      &nbsp;·&nbsp; ${t("createdBy")}: ${esc(nameOf(tk.created_by))}
+      ${tk.due_date?`&nbsp;·&nbsp; ${t("due")}: ${esc(tk.due_date)}`:""}
+    </div>
+    <div class="small muted">${t("created")}: ${fmt(tk.created_at)} &nbsp;·&nbsp; ${t("updated")}: ${fmt(tk.updated_at)}</div>
+    <div class="row wrap" style="margin-top:.5rem"></div>`;
+  if(canEdit){
+    const bar=wrap.querySelector(".row:last-child");
+    if(tk.status!=="in_progress" && tk.status!=="done")
+      bar.appendChild(mkBtn(t("start"),"tiny",()=>setStatus(tk,"in_progress")));
+    if(tk.status!=="done")
+      bar.appendChild(mkBtn(t("markDone"),"tiny primary",()=>completeTask(tk)));
+    else
+      bar.appendChild(mkBtn(t("reopen"),"tiny",()=>setStatus(tk,"todo")));
+    bar.appendChild(mkBtn(t("edit"),"tiny",()=>openTaskModal(tk)));
+    bar.appendChild(mkBtn(t("del"),"tiny",()=>deleteTask(tk)));
+  }
+  return wrap;
+}
+const mkBtn=(label,cls,fn)=>{ const b=el("button",{className:cls},esc(label)); b.onclick=fn; return b; };
+
+async function setStatus(tk,status){
+  const { error } = await sb.from("tasks").update({ status }).eq("id",tk.id);
+  if(error) return toast(error.message);
+  await selectList(state.currentListId,true);
+}
+async function completeTask(tk){
+  const { error } = await sb.from("tasks").update({ status:"done" }).eq("id",tk.id);
+  if(error) return toast(error.message);
+  await selectList(state.currentListId,true);
+  // proponi task collegato
+  openTaskModal(null, { linked:true, base:tk });
+}
+async function deleteTask(tk){
+  if(!confirm(t("confirmDelTask"))) return;
+  const { error } = await sb.from("tasks").delete().eq("id",tk.id);
+  if(error) return toast(error.message);
+  await selectList(state.currentListId,true);
+}
+
+async function deleteList(list){
+  if(!confirm(t("confirmDelList"))) return;
+  const { error } = await sb.from("task_lists").delete().eq("id",list.id);
+  if(error) return toast(error.message);
+  state.currentListId=null; await loadLists();
+}
+
+// ============================================================================
+//  Modals
+// ============================================================================
+function openModal(innerHtml){
+  const host=$("#modalHost");
+  host.innerHTML=`<div class="modal-bg"><div class="card modal stack">${innerHtml}</div></div>`;
+  host.querySelector(".modal-bg").addEventListener("click",e=>{ if(e.target.classList.contains("modal-bg")) closeModal(); });
+  return host.querySelector(".modal");
+}
+function closeModal(){ $("#modalHost").innerHTML=""; }
+
+function openListModal(existing){
+  const m=openModal(`
+    <h3 style="margin:0">${existing?t("editList"):t("mNewListTitle")}</h3>
+    <div><label class="field">${t("mListTitle")}</label><input id="mLTitle" value="${existing?esc(existing.title):""}"></div>
+    <div><label class="field">${t("mListDesc")}</label><textarea id="mLDesc">${existing?esc(existing.description||""):""}</textarea></div>
+    <div class="row" style="justify-content:flex-end">
+      <button class="ghost" id="mCancel">${t("mCancel")}</button>
+      <button class="primary" id="mOk">${existing?t("mSave"):t("mCreate")}</button>
+    </div>`);
+  m.querySelector("#mCancel").onclick=closeModal;
+  m.querySelector("#mOk").onclick=async()=>{
+    const title=m.querySelector("#mLTitle").value.trim(); if(!title) return;
+    const desc=m.querySelector("#mLDesc").value.trim();
+    if(existing){
+      const { error }=await sb.from("task_lists").update({title,description:desc}).eq("id",existing.id);
+      if(error) return toast(error.message);
+      closeModal(); await loadLists(); await selectList(existing.id,true);
+    } else {
+      const { data, error }=await sb.from("task_lists").insert({title,description:desc,created_by:state.user.id}).select().single();
+      if(error) return toast(error.message);
+      // il creatore diventa automaticamente partecipante (via trigger DB)
+      closeModal(); await loadLists(); await selectList(data.id);
+    }
+  };
+}
+
+function openTaskModal(existing, opts={}){
+  const list=state.lists.find(l=>l.id===state.currentListId);
+  const memberIds=[...new Set(state.members.map(m=>m.user_id))];
+  const options=memberIds.map(id=>`<option value="${id}">${esc(nameOf(id))}${id===state.user.id?" ("+t("you")+")":""}</option>`).join("");
+  const base=opts.base;
+  const preTitle = existing?existing.title : (opts.linked&&base?`Revisionare / step successivo: ${base.title}`:"");
+  const preAssignee = existing?existing.assigned_to : (opts.linked&&base?base.created_by:"");
+  const m=openModal(`
+    <h3 style="margin:0">${existing?t("edit"):(opts.linked?t("createLinked"):t("mNewTaskTitle"))}</h3>
+    ${opts.linked?`<div class="small muted">${t("linkedPrompt")}</div>`:""}
+    <div><label class="field">${t("mTaskTitle")}</label><input id="mTTitle" value="${esc(preTitle)}"></div>
+    <div><label class="field">${t("mTaskDesc")}</label><textarea id="mTDesc">${existing?esc(existing.description||""):""}</textarea></div>
+    <div><label class="field">${t("assignedTo")}</label>
+      <select id="mTAssignee"><option value="">${t("unassigned")}</option>${options}</select></div>
+    <div><label class="field">${t("mDue")}</label><input id="mTDue" type="date" value="${existing&&existing.due_date?existing.due_date:""}"></div>
+    <div class="row" style="justify-content:flex-end">
+      <button class="ghost" id="mCancel">${t("mCancel")}</button>
+      <button class="primary" id="mOk">${existing?t("mSave"):t("mCreate")}</button>
+    </div>`);
+  const sel=m.querySelector("#mTAssignee"); if(preAssignee) sel.value=preAssignee;
+  m.querySelector("#mCancel").onclick=closeModal;
+  m.querySelector("#mOk").onclick=async()=>{
+    const title=m.querySelector("#mTTitle").value.trim(); if(!title) return;
+    const payload={ title, description:m.querySelector("#mTDesc").value.trim(),
+      assigned_to:sel.value||null, due_date:m.querySelector("#mTDue").value||null };
+    if(existing){
+      const { error }=await sb.from("tasks").update(payload).eq("id",existing.id);
+      if(error) return toast(error.message);
+    } else {
+      payload.list_id=state.currentListId; payload.created_by=state.user.id; payload.status="todo";
+      const { error }=await sb.from("tasks").insert(payload);
+      if(error) return toast(error.message);
+    }
+    closeModal(); await selectList(state.currentListId,true);
+  };
+}
+
+function openMembersModal(){
+  const list=state.lists.find(l=>l.id===state.currentListId);
+  const memberRows=state.members.map(mm=>`
+    <div class="row" style="justify-content:space-between">
+      <span>${chip(mm.user_id)} <span class="pill">${mm.role==="participant"?t("participants"):t("watchers")}</span></span>
+      <button class="tiny" data-rm="${mm.user_id}" style="color:var(--danger)">${t("mRemove")}</button>
+    </div>`).join("");
+  const avail=Object.values(state.profiles).filter(p=>!state.members.find(mm=>mm.user_id===p.id));
+  const opts=avail.map(p=>`<option value="${p.id}">${esc(p.full_name||p.username||p.email)}</option>`).join("");
+  const m=openModal(`
+    <h3 style="margin:0">${t("mMembersTitle")}</h3>
+    <div class="stack">${memberRows||`<span class="muted small">—</span>`}</div>
+    <hr style="border:none;border-top:1px solid var(--border);width:100%">
+    <div><label class="field">${t("mChoosePerson")}</label>
+      <select id="mPerson"><option value="">${t("mChoosePerson")}</option>${opts}</select></div>
+    <div class="row wrap">
+      <button class="tiny primary" id="mAddP">${t("mAddParticipant")}</button>
+      <button class="tiny" id="mAddW">${t("mAddWatcher")}</button>
+      <div class="grow"></div>
+      <button class="ghost" id="mClose">${t("mCancel")}</button>
+    </div>`);
+  m.querySelectorAll("[data-rm]").forEach(b=>b.onclick=async()=>{
+    await sb.from("list_members").delete().eq("list_id",list.id).eq("user_id",b.dataset.rm);
+    await selectList(list.id,true); openMembersModal();
+  });
+  const add=async(role)=>{
+    const uid=m.querySelector("#mPerson").value; if(!uid) return;
+    const { error }=await sb.from("list_members").insert({list_id:list.id,user_id:uid,role});
+    if(error) return toast(error.message);
+    await selectList(list.id,true); openMembersModal();
+  };
+  m.querySelector("#mAddP").onclick=()=>add("participant");
+  m.querySelector("#mAddW").onclick=()=>add("watcher");
+  m.querySelector("#mClose").onclick=closeModal;
+}
+
+// ============================================================================
+//  Notes
+// ============================================================================
+async function loadNotes(){
+  const { data }=await sb.from("notes").select("*").order("updated_at",{ascending:false});
+  state.notes=data||[]; renderNotes();
+}
+function renderNotes(){
+  const c=$("#notesContainer"); if(!c) return; c.innerHTML="";
+  if(!state.notes.length){ c.appendChild(el("div",{className:"card muted small"},esc(t("notesEmpty")))); return; }
+  state.notes.forEach(n=>{
+    const mine=n.created_by===state.user.id||state.profile?.role==="admin";
+    const card=el("div",{className:"card stack"});
+    card.innerHTML=`
+      ${n.title?`<strong>${esc(n.title)}</strong>`:""}
+      <div style="white-space:pre-wrap">${esc(n.content)}</div>
+      <div class="small muted">${esc(nameOf(n.created_by))} · ${fmt(n.updated_at)}</div>`;
+    if(mine){
+      const bar=el("div",{className:"row"});
+      bar.appendChild(mkBtn(t("edit"),"tiny",()=>editNote(n)));
+      bar.appendChild(mkBtn(t("del"),"tiny",()=>deleteNote(n)));
+      card.appendChild(bar);
+    }
+    c.appendChild(card);
+  });
+}
+async function addNote(){
+  const title=$("#noteTitle").value.trim(), content=$("#noteContent").value.trim();
+  if(!content) return;
+  const { error }=await sb.from("notes").insert({title,content,created_by:state.user.id});
+  if(error) return toast(error.message);
+  $("#noteTitle").value=""; $("#noteContent").value=""; await loadNotes();
+}
+function editNote(n){
+  const m=openModal(`
+    <h3 style="margin:0">${t("edit")}</h3>
+    <div><label class="field">${t("noteTitlePh")}</label><input id="eNTitle" value="${esc(n.title||"")}"></div>
+    <div><label class="field">${t("noteContentPh")}</label><textarea id="eNContent">${esc(n.content)}</textarea></div>
+    <div class="row" style="justify-content:flex-end">
+      <button class="ghost" id="mCancel">${t("mCancel")}</button>
+      <button class="primary" id="mOk">${t("mSave")}</button></div>`);
+  m.querySelector("#mCancel").onclick=closeModal;
+  m.querySelector("#mOk").onclick=async()=>{
+    const { error }=await sb.from("notes").update({title:m.querySelector("#eNTitle").value.trim(),content:m.querySelector("#eNContent").value.trim()}).eq("id",n.id);
+    if(error) return toast(error.message); closeModal(); await loadNotes();
+  };
+}
+async function deleteNote(n){ if(!confirm(t("confirmDelNote")))return;
+  await sb.from("notes").delete().eq("id",n.id); await loadNotes(); }
+
+// ============================================================================
+//  Tools
+// ============================================================================
+async function loadTools(){
+  const { data }=await sb.from("tools").select("*").order("created_at",{ascending:false});
+  state.tools=data||[]; renderTools();
+}
+function renderTools(){
+  const c=$("#toolsContainer"); if(!c) return; c.innerHTML="";
+  if(!state.tools.length){ c.appendChild(el("div",{className:"card muted small"},esc(t("toolsEmpty")))); return; }
+  state.tools.forEach(tl=>{
+    const mine=tl.created_by===state.user.id||state.profile?.role==="admin";
+    const url = /^https?:\/\//i.test(tl.url)?tl.url:"https://"+tl.url;
+    const card=el("div",{className:"card stack"});
+    card.innerHTML=`
+      <div class="row wrap" style="justify-content:space-between">
+        <a href="${esc(url)}" target="_blank" rel="noopener"><strong>${esc(tl.name)}</strong> ↗</a>
+      </div>
+      ${tl.description?`<div class="small">${esc(tl.description)}</div>`:""}
+      <div class="small muted">${esc(url)} · ${esc(nameOf(tl.created_by))}</div>`;
+    if(mine){ const bar=el("div",{className:"row"}); bar.appendChild(mkBtn(t("del"),"tiny",()=>deleteTool(tl))); card.appendChild(bar); }
+    c.appendChild(card);
+  });
+}
+async function addTool(){
+  const name=$("#toolName").value.trim(), url=$("#toolUrl").value.trim(), description=$("#toolDesc").value.trim();
+  if(!name||!url) return;
+  const { error }=await sb.from("tools").insert({name,url,description,created_by:state.user.id});
+  if(error) return toast(error.message);
+  $("#toolName").value=""; $("#toolUrl").value=""; $("#toolDesc").value=""; await loadTools();
+}
+async function deleteTool(tl){ if(!confirm(t("confirmDelTool")))return;
+  await sb.from("tools").delete().eq("id",tl.id); await loadTools(); }
+
+// ============================================================================
+//  Notifications
+// ============================================================================
+async function loadNotifications(){
+  const { data }=await sb.from("notifications").select("*").eq("user_id",state.user.id).order("created_at",{ascending:false}).limit(50);
+  state.notifications=data||[]; updateNotifBadge();
+}
+function updateNotifBadge(){
+  const n=state.notifications.filter(x=>!x.read).length;
+  const b=$("#notifCount"); if(!b) return;
+  if(n>0){ b.textContent=n; b.classList.remove("hidden"); } else b.classList.add("hidden");
+}
+function openNotifModal(){
+  const rows=state.notifications.map(n=>`
+    <div class="card" style="padding:.6rem;${n.read?"opacity:.6":""}">
+      <div>${esc(n.message||"")}</div>
+      <div class="small muted">${fmt(n.created_at)}</div>
+    </div>`).join("");
+  const m=openModal(`
+    <div class="row" style="justify-content:space-between"><h3 style="margin:0">${t("notifTitle")}</h3></div>
+    <div class="stack">${rows||`<span class="muted small">${t("notifEmpty")}</span>`}</div>
+    <div class="row" style="justify-content:space-between">
+      <button class="tiny" id="mMarkAll">${t("markAllRead")}</button>
+      <button class="ghost" id="mClose">${t("mCancel")}</button>
+    </div>`);
+  m.querySelector("#mClose").onclick=closeModal;
+  m.querySelector("#mMarkAll").onclick=async()=>{
+    await sb.from("notifications").update({read:true}).eq("user_id",state.user.id).eq("read",false);
+    await loadNotifications(); closeModal();
+  };
+  // apri le notifiche relative -> vai all'elenco
+  state.notifications.forEach((n,i)=>{
+    const card=m.querySelectorAll(".stack .card")[i];
+    if(card && n.list_id) card.style.cursor="pointer", card.onclick=async()=>{
+      await sb.from("notifications").update({read:true}).eq("id",n.id);
+      closeModal(); switchTab("lists"); await loadNotifications();
+      if(state.lists.find(l=>l.id===n.list_id)) await selectList(n.list_id);
+    };
+  });
+}
+
+// ============================================================================
+//  Tabs
+// ============================================================================
+function switchTab(tab){
+  state.tab=tab;
+  ["lists","notes","tools"].forEach(x=>{
+    $("#panel-"+x).classList.toggle("hidden",x!==tab);
+    document.querySelector(`[data-tab="${x}"]`).classList.toggle("active",x===tab);
+  });
+}
+
+// ============================================================================
+//  Boot
+// ============================================================================
+function wire(){
+  $("#btnLogin").onclick=doLogin;
+  $("#password").addEventListener("keydown",e=>{ if(e.key==="Enter") doLogin(); });
+  $("#btnLogout").onclick=doLogout;
+  $("#btnTheme").onclick=toggleTheme; $("#authTheme").onclick=toggleTheme;
+  $("#btnLang").onclick=toggleLang; $("#authLang").onclick=toggleLang;
+  $("#btnNotif").onclick=openNotifModal;
+  $("#btnNewList").onclick=()=>openListModal(null);
+  $("#btnAddNote").onclick=addNote;
+  $("#btnAddTool").onclick=addTool;
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+}
+
+async function boot(){
+  applyTheme(localStorage.getItem("ews_theme")||"light");
+  wire(); applyLang(LANG); renderStatic();
+  if(!window.EWS_CONFIG || !window.EWS_CONFIG.SUPABASE_URL || window.EWS_CONFIG.SUPABASE_URL.includes("XXXX")){
+    $("#authError").textContent="Configura config.js con URL e anon key di Supabase (vedi SETUP.md).";
+    $("#authError").classList.remove("hidden"); return;
+  }
+  sb = window.supabase.createClient(window.EWS_CONFIG.SUPABASE_URL, window.EWS_CONFIG.SUPABASE_ANON_KEY);
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session) await onSignedIn();
+  // refresh periodico leggero di task/notifiche
+  setInterval(async()=>{ if(state.user){ await loadNotifications();
+    if(state.tab==="lists"&&state.currentListId) await selectList(state.currentListId,true); } },30000);
+}
+boot();
+</script>
+</body>
+</html>
