@@ -6,28 +6,43 @@
 <title>The EndoSex Working Space</title>
 <style>
   :root{
-    --bg:#f4f5f7; --surface:#ffffff; --surface-2:#eceef1; --border:#d8dbe0;
-    --text:#1f2328; --text-soft:#5b6270; --accent:#3f5063; --accent-soft:#e7ebf0;
-    --ok:#3d7a5a; --warn:#9a7b2e; --danger:#a4483f; --shadow:0 1px 3px rgba(0,0,0,.08);
-    --radius:12px;
+    --bg:#f4efe4; --surface:#fffdf7; --surface-2:#efe8d8; --border:#e3d9c4;
+    --text:#33302a; --text-soft:#877d67; --accent:#4f7d70; --accent-2:#c47a52;
+    --accent-soft:#e4ede9;
+    --ok:#4f8a5b; --ok-soft:#dcecdd; --warn:#bd8324; --warn-soft:#f4e8cf;
+    --danger:#b25548; --danger-soft:#f2ddd7;
+    --dot:rgba(120,108,80,.16);
+    --shadow:0 1px 2px rgba(80,66,40,.10),0 4px 14px rgba(80,66,40,.05);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,ui-serif,serif;
+    --radius:14px;
   }
   html[data-theme="dark"]{
-    --bg:#15171b; --surface:#1e2126; --surface-2:#262a31; --border:#333842;
-    --text:#e7e9ec; --text-soft:#a0a6b0; --accent:#8fa6bd; --accent-soft:#2a303a;
-    --ok:#6fb58e; --warn:#d6b45a; --danger:#e08079; --shadow:0 1px 3px rgba(0,0,0,.4);
+    --bg:#1b1915; --surface:#262219; --surface-2:#302b20; --border:#3d3628;
+    --text:#ece6d7; --text-soft:#a79d85; --accent:#7fb3a4; --accent-2:#d79267;
+    --accent-soft:#26302b;
+    --ok:#6fb58e; --ok-soft:#22332a; --warn:#d6b45a; --warn-soft:#38311f;
+    --danger:#e08079; --danger-soft:#3a2723;
+    --dot:rgba(230,220,190,.07);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.25);
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:var(--bg);color:var(--text);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+    color:var(--text);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;
+    background-color:var(--bg);
+    background-image:radial-gradient(var(--dot) 1.3px, transparent 1.3px);
+    background-size:22px 22px; background-position:-11px -11px;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;letter-spacing:.1px}
   button{font:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface);
-    color:var(--text);border-radius:8px;padding:.5rem .8rem;transition:.15s}
+    color:var(--text);border-radius:9px;padding:.5rem .85rem;transition:.15s;box-shadow:var(--shadow)}
   button:hover{background:var(--surface-2)}
   button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-  button.primary:hover{filter:brightness(1.08)}
-  button.ghost{border-color:transparent;background:transparent}
-  button.tiny{padding:.25rem .5rem;font-size:.8rem}
+  button.primary:hover{filter:brightness(1.06)}
+  button.ghost{border-color:transparent;background:transparent;box-shadow:none}
+  button.tiny{padding:.28rem .55rem;font-size:.8rem;box-shadow:none}
   input,textarea,select{font:inherit;color:var(--text);background:var(--surface);
-    border:1px solid var(--border);border-radius:8px;padding:.55rem .7rem;width:100%}
+    border:1px solid var(--border);border-radius:9px;padding:.55rem .7rem;width:100%}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft)}
   textarea{resize:vertical;min-height:70px}
   a{color:var(--accent)}
   .hidden{display:none!important}
@@ -37,47 +52,57 @@
   .wrap{flex-wrap:wrap}
   .grow{flex:1}
   .stack{display:flex;flex-direction:column;gap:.6rem}
-  .badge{display:inline-block;min-width:18px;text-align:center;background:var(--danger);
-    color:#fff;border-radius:999px;padding:0 6px;font-size:.72rem;font-weight:600}
-  .pill{display:inline-block;padding:.1rem .5rem;border-radius:999px;font-size:.72rem;
-    background:var(--surface-2);color:var(--text-soft);border:1px solid var(--border)}
-  .pill.todo{color:var(--warn)} .pill.in_progress{color:var(--accent)} .pill.done{color:var(--ok)}
+  .badge{display:inline-block;min-width:18px;text-align:center;background:var(--accent-2);
+    color:#fff;border-radius:999px;padding:0 6px;font-size:.72rem;font-weight:700}
+  .pill{display:inline-block;padding:.12rem .55rem;border-radius:999px;font-size:.72rem;font-weight:600;
+    background:var(--surface-2);color:var(--text-soft);border:1px solid transparent}
+  .pill.todo{background:var(--warn-soft);color:var(--warn)}
+  .pill.in_progress{background:var(--accent-soft);color:var(--accent)}
+  .pill.done{background:var(--ok-soft);color:var(--ok)}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-    padding:.9rem;box-shadow:var(--shadow)}
+    padding:1rem;box-shadow:var(--shadow)}
 
   /* Top bar */
-  header{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--border);
-    padding:.55rem .9rem;display:flex;gap:.6rem;align-items:center;
+  header{position:sticky;top:0;z-index:20;background:var(--surface);
+    border-bottom:1px solid var(--border);box-shadow:0 2px 0 var(--accent-soft);
+    padding:.55rem .9rem;display:flex;gap:.55rem;align-items:center;
     padding-top:calc(.55rem + env(safe-area-inset-top))}
-  header h1{font-size:1rem;margin:0;font-weight:650;letter-spacing:.2px;white-space:nowrap}
-  header .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--text-soft));
-    display:grid;place-items:center;color:#fff;font-weight:700;font-size:.8rem;flex:none}
-  .iconbtn{border:1px solid var(--border);background:var(--surface);border-radius:8px;
+  header h1{font-size:1.05rem;margin:0;white-space:nowrap}
+  header .logo{width:30px;height:30px;border-radius:9px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:grid;place-items:center;color:#fff;font-weight:700;font-size:.8rem;flex:none;
+    font-family:var(--serif);box-shadow:var(--shadow)}
+  .iconbtn{border:1px solid var(--border);background:var(--surface);border-radius:9px;
     width:38px;height:38px;display:grid;place-items:center;padding:0;font-size:1rem;position:relative}
   .iconbtn .badge{position:absolute;top:-6px;right:-6px}
 
   /* Layout */
-  main{max-width:1100px;margin:0 auto;padding:1rem .9rem 4rem}
-  nav.tabs{display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap}
+  main{max-width:1100px;margin:0 auto;padding:1.1rem .9rem 4rem}
+  nav.tabs{display:flex;gap:.45rem;margin-bottom:1.1rem;flex-wrap:wrap}
+  nav.tabs button{border-radius:999px}
   nav.tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
   .split{display:grid;grid-template-columns:300px 1fr;gap:1rem;align-items:start}
-  @media(max-width:760px){ .split{grid-template-columns:1fr} header h1{font-size:.9rem} }
+  @media(max-width:760px){ .split{grid-template-columns:1fr} header h1{font-size:.92rem} }
 
-  .listitem{width:100%;text-align:left;display:flex;flex-direction:column;gap:.15rem;align-items:flex-start}
-  .listitem.active{background:var(--accent-soft);border-color:var(--accent)}
-  .task{border:1px solid var(--border);border-radius:10px;padding:.7rem;background:var(--surface);margin-bottom:.6rem}
-  .task.done{opacity:.7}
-  .task h4{margin:0 0 .2rem}
+  .listitem{width:100%;text-align:left;display:flex;flex-direction:column;gap:.15rem;align-items:flex-start;
+    border-left:4px solid var(--accent-2)}
+  .listitem.active{background:var(--accent-soft);border-color:var(--accent);border-left-color:var(--accent)}
+  .task{border:1px solid var(--border);border-left:5px solid var(--border);border-radius:11px;
+    padding:.8rem;background:var(--surface);margin-bottom:.6rem;box-shadow:var(--shadow)}
+  .task.s-todo{border-left-color:var(--warn)}
+  .task.s-in_progress{border-left-color:var(--accent)}
+  .task.s-done{border-left-color:var(--ok);opacity:.72}
+  .task h4{margin:0 0 .2rem;font-size:1.02rem}
   .avatar{width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
     display:inline-grid;place-items:center;font-size:.7rem;font-weight:700;border:1px solid var(--border)}
 
   /* Auth */
-  .auth-wrap{min-height:80vh;display:grid;place-items:center;padding:1rem}
-  .auth-card{width:100%;max-width:360px}
+  .auth-wrap{min-height:82vh;display:grid;place-items:center;padding:1rem}
+  .auth-card{width:100%;max-width:370px}
 
   /* Modal */
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;z-index:50;padding:1rem}
-  .modal{width:100%;max-width:460px;max-height:90vh;overflow:auto}
+  .modal-bg{position:fixed;inset:0;background:rgba(40,32,18,.5);display:grid;place-items:center;z-index:50;padding:1rem}
+  .modal{width:100%;max-width:470px;max-height:90vh;overflow:auto}
   .toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);z-index:60;
     background:var(--text);color:var(--bg);padding:.6rem 1rem;border-radius:10px;box-shadow:var(--shadow);
     max-width:90vw}
@@ -91,6 +116,7 @@
   <div class="logo">ES</div>
   <h1>The EndoSex Working Space</h1>
   <div class="grow"></div>
+  <button class="iconbtn hidden" id="btnNewUser" title="Nuovo account">+👤</button>
   <button class="iconbtn" id="btnLang" title="Language">IT</button>
   <button class="iconbtn" id="btnTheme" title="Theme">🌙</button>
   <button class="iconbtn" id="btnNotif" title="Notifiche">🔔<span class="badge hidden" id="notifCount">0</span></button>
@@ -200,6 +226,10 @@ const I18N = {
     confirmDelNote:"Eliminare questo appunto?", confirmDelTool:"Eliminare questo strumento?",
     you:"tu", admin:"admin", langName:"IT", editList:"Rinomina", deleteList:"Elimina elenco",
     savedOk:"Salvato", assignSelf:"Assegna a me",
+    mNewAccountTitle:"Nuovo account (solo admin)", mFullNameLbl:"Nome e cognome",
+    mUsernameLbl:"Username", mEmailLbl:"Email", mPasswordLbl:"Password (min. 6 caratteri)",
+    mCreateAccount:"Crea account", accountCreated:"Account creato",
+    accountHint:"La persona accede con questa email e password. Puoi comunicargliele; potrà usarle subito.",
   },
   en:{
     tagline:"Shared workspace of the research group. Sign in to continue.",
@@ -228,6 +258,10 @@ const I18N = {
     confirmDelNote:"Delete this note?", confirmDelTool:"Delete this tool?",
     you:"you", admin:"admin", langName:"EN", editList:"Rename", deleteList:"Delete list",
     savedOk:"Saved", assignSelf:"Assign to me",
+    mNewAccountTitle:"New account (admin only)", mFullNameLbl:"Full name",
+    mUsernameLbl:"Username", mEmailLbl:"Email", mPasswordLbl:"Password (min. 6 chars)",
+    mCreateAccount:"Create account", accountCreated:"Account created",
+    accountHint:"The person signs in with this email and password. Share them; usable right away.",
   }
 };
 let LANG = localStorage.getItem("ews_lang") || "it";
@@ -302,6 +336,7 @@ async function onSignedIn(){
   $("#authView").classList.add("hidden");
   $("#topbar").classList.remove("hidden");
   $("#appView").classList.remove("hidden");
+  $("#btnNewUser").classList.toggle("hidden", state.profile?.role!=="admin");
   await loadProfiles();
   await loadLists();
   await loadNotes();
@@ -398,7 +433,7 @@ function chip(uid){
 }
 
 function renderTask(tk, canEdit){
-  const wrap=el("div",{className:"task"+(tk.status==="done"?" done":"")});
+  const wrap=el("div",{className:"task s-"+tk.status});
   const statusLabel = tk.status==="todo"?t("statusTodo"):tk.status==="in_progress"?t("statusProgress"):t("statusDone");
   wrap.innerHTML=`
     <div class="row wrap" style="justify-content:space-between">
@@ -462,7 +497,15 @@ function openModal(innerHtml){
   const host=$("#modalHost");
   host.innerHTML=`<div class="modal-bg"><div class="card modal stack">${innerHtml}</div></div>`;
   host.querySelector(".modal-bg").addEventListener("click",e=>{ if(e.target.classList.contains("modal-bg")) closeModal(); });
-  return host.querySelector(".modal");
+  const modal=host.querySelector(".modal");
+  // Invio in un campo di testo = conferma; Esc = chiudi
+  modal.addEventListener("keydown",e=>{
+    if(e.key==="Enter" && e.target.tagName==="INPUT"){ e.preventDefault(); const b=modal.querySelector("button.primary"); if(b) b.click(); }
+    else if(e.key==="Escape"){ closeModal(); }
+  });
+  // focus sul primo campo
+  setTimeout(()=>{ const f=modal.querySelector("input,textarea"); if(f) f.focus(); },30);
+  return modal;
 }
 function closeModal(){ $("#modalHost").innerHTML=""; }
 
@@ -563,6 +606,43 @@ function openMembersModal(){
   m.querySelector("#mAddP").onclick=()=>add("participant");
   m.querySelector("#mAddW").onclick=()=>add("watcher");
   m.querySelector("#mClose").onclick=closeModal;
+}
+
+// ============================================================================
+//  Creazione account (solo admin)
+// ============================================================================
+let sbSignup = null;   // client separato: non tocca la sessione dell'admin
+function openNewUserModal(){
+  if(state.profile?.role!=="admin") return;
+  const m=openModal(`
+    <h3 style="margin:0">${t("mNewAccountTitle")}</h3>
+    <p class="small muted" style="margin:0">${t("accountHint")}</p>
+    <div><label class="field">${t("mFullNameLbl")}</label><input id="uFull"></div>
+    <div><label class="field">${t("mUsernameLbl")}</label><input id="uUser"></div>
+    <div><label class="field">${t("mEmailLbl")}</label><input id="uEmail" type="email"></div>
+    <div><label class="field">${t("mPasswordLbl")}</label><input id="uPass" type="text"></div>
+    <p class="small hidden" id="uErr" style="color:var(--danger)"></p>
+    <div class="row" style="justify-content:flex-end">
+      <button class="ghost" id="mCancel">${t("mCancel")}</button>
+      <button class="primary" id="mOk">${t("mCreateAccount")}</button>
+    </div>`);
+  m.querySelector("#mCancel").onclick=closeModal;
+  m.querySelector("#mOk").onclick=async()=>{
+    const full_name=m.querySelector("#uFull").value.trim();
+    const username=m.querySelector("#uUser").value.trim();
+    const email=m.querySelector("#uEmail").value.trim();
+    const password=m.querySelector("#uPass").value;
+    const err=m.querySelector("#uErr");
+    if(!email||password.length<6){ err.textContent="Email valida e password (min. 6) richieste."; err.classList.remove("hidden"); return; }
+    if(!sbSignup) sbSignup=window.supabase.createClient(
+      window.EWS_CONFIG.SUPABASE_URL, window.EWS_CONFIG.SUPABASE_ANON_KEY,
+      { auth:{ persistSession:false, autoRefreshToken:false } });
+    const { error }=await sbSignup.auth.signUp({ email, password,
+      options:{ data:{ full_name, username, role:"member" } } });
+    if(error){ err.textContent=error.message; err.classList.remove("hidden"); return; }
+    closeModal(); toast(t("accountCreated")+": "+(username||email));
+    setTimeout(loadProfiles, 1200);   // il profilo lo crea il trigger DB
+  };
 }
 
 // ============================================================================
@@ -711,6 +791,7 @@ function wire(){
   $("#btnTheme").onclick=toggleTheme; $("#authTheme").onclick=toggleTheme;
   $("#btnLang").onclick=toggleLang; $("#authLang").onclick=toggleLang;
   $("#btnNotif").onclick=openNotifModal;
+  $("#btnNewUser").onclick=openNewUserModal;
   $("#btnNewList").onclick=()=>openListModal(null);
   $("#btnAddNote").onclick=addNote;
   $("#btnAddTool").onclick=addTool;
