@@ -151,6 +151,7 @@
     <button data-tab="lists" class="active" id="tabLists"></button>
     <button data-tab="notes" id="tabNotes"></button>
     <button data-tab="tools" id="tabTools"></button>
+    <button data-tab="guide" id="tabGuide"></button>
   </nav>
 
   <!-- TAB: LISTS -->
@@ -186,6 +187,9 @@
     </div>
     <div class="stack" id="toolsContainer"></div>
   </section>
+
+  <!-- TAB: GUIDE -->
+  <section id="panel-guide" class="hidden stack"></section>
 </main>
 
 <div id="modalHost"></div>
@@ -201,7 +205,7 @@ const I18N = {
   it:{
     tagline:"Spazio di lavoro condiviso del gruppo di ricerca. Accedi per continuare.",
     email:"Email", password:"Password", login:"Accedi", loggingIn:"Accesso…",
-    tabLists:"Elenchi & Task", tabNotes:"Bloc Notes", tabTools:"Strumenti",
+    tabLists:"Elenchi & Task", tabNotes:"Bloc Notes", tabTools:"Strumenti", tabGuide:"Guida facile",
     newList:"+ Nuovo elenco", noLists:"Nessun elenco visibile. Creane uno o chiedi di essere aggiunto.",
     selectList:"Seleziona un elenco a sinistra, oppure creane uno nuovo.",
     participants:"Partecipanti", watchers:"Spettatori", manageMembers:"Gestisci persone",
@@ -234,7 +238,7 @@ const I18N = {
   en:{
     tagline:"Shared workspace of the research group. Sign in to continue.",
     email:"Email", password:"Password", login:"Sign in", loggingIn:"Signing in…",
-    tabLists:"Lists & Tasks", tabNotes:"Notepad", tabTools:"Tools",
+    tabLists:"Lists & Tasks", tabNotes:"Notepad", tabTools:"Tools", tabGuide:"Simple guide",
     newList:"+ New list", noLists:"No visible lists. Create one or ask to be added.",
     selectList:"Select a list on the left, or create a new one.",
     participants:"Participants", watchers:"Watchers", manageMembers:"Manage people",
@@ -266,6 +270,109 @@ const I18N = {
 };
 let LANG = localStorage.getItem("ews_lang") || "it";
 const t = k => (I18N[LANG][k] ?? k);
+
+// ============================================================================
+//  Contenuto della "Guida facile" (stile spiegamelo-come-a-un-bambino)
+// ============================================================================
+const GUIDE = {
+  it:`
+  <div class="card stack">
+    <h2 style="margin:0">🧭 Guida facile</h2>
+    <p class="muted" style="margin:0">Tutto quello che serve, spiegato in parole semplici. Niente paura: qui non si rompe nulla.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Cos'è questo posto?</h3>
+    <p style="margin:0">Immagina una <strong>lavagna condivisa</strong> del gruppo. Qui segniamo <strong>chi deve fare cosa</strong>, ci lasciamo <strong>appunti</strong> e teniamo in ordine i <strong>link agli strumenti</strong> che usiamo. Ognuno vede solo le cose che lo riguardano.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Le tre parole da capire</h3>
+    <p style="margin:0"><strong>Elenco</strong> = una cartellina per un progetto (es. <em>"Paper XYZ"</em>). Dentro ci stanno i task di quel progetto.</p>
+    <p style="margin:0"><strong>Task</strong> = una cosa da fare (es. <em>"scrivere l'introduzione"</em>). Ha chi lo fa e uno stato.</p>
+    <p style="margin:0"><strong>Persone dell'elenco</strong> = i <strong>Partecipanti</strong> (fanno il lavoro) e gli <strong>Spettatori</strong> (guardano soltanto, non toccano).</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Come faccio a…</h3>
+    <p style="margin:0"><strong>Creare una cartellina di lavoro:</strong> vai su <em>Elenchi &amp; Task</em> → <em>+ Nuovo elenco</em>, dai un nome e conferma.</p>
+    <p style="margin:0"><strong>Invitare colleghi:</strong> apri l'elenco → <em>Gestisci persone</em> → scegli la persona e premi <em>Aggiungi partecipante</em> (o <em>Aggiungi spettatore</em>).</p>
+    <p style="margin:0"><strong>Assegnare un compito:</strong> apri l'elenco → <em>+ Nuovo task</em>, scrivi cosa serve e scegli a chi assegnarlo. Quella persona riceverà una notifica (campanella 🔔 in alto) e una mail.</p>
+    <p style="margin:0"><strong>Dire "l'ho fatto":</strong> sul task premi <em>Segna completato</em>. Se vuoi, l'app ti propone subito di creare il passo successivo (es. <em>"revisiona il testo"</em>) già assegnato a un collega.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Gli stati di un task (i colori a sinistra)</h3>
+    <p style="margin:0"><span class="pill todo">Da fare</span> non l'ha ancora toccato nessuno &nbsp;·&nbsp; <span class="pill in_progress">In corso</span> ci si sta lavorando &nbsp;·&nbsp; <span class="pill done">Completato</span> è fatto.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Il Bloc Notes e gli Strumenti</h3>
+    <p style="margin:0"><strong>Bloc Notes</strong> = un muro di appunti visibile a tutto il gruppo. Scrivi un pensiero, un promemoria, un'idea. Puoi modificare o cancellare i tuoi.</p>
+    <p style="margin:0"><strong>Strumenti</strong> = la rubrica dei link ai programmi/servizi che usiamo, così nessuno deve più cercarli nelle mail.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Chi vede cosa? (la parte importante)</h3>
+    <p style="margin:0">Un elenco lo vedono <strong>solo</strong> le persone che ci hai messo dentro. Se un collega non è tra i partecipanti o spettatori, quell'elenco per lui <strong>non esiste</strong>. Il Bloc Notes e gli Strumenti, invece, sono di tutti.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Bottoni in alto</h3>
+    <p style="margin:0">🔔 le tue notifiche &nbsp;·&nbsp; 🌙/☀️ tema scuro o chiaro &nbsp;·&nbsp; IT/EN lingua &nbsp;·&nbsp; ⎋ esci. Se sei l'amministratore vedi anche <strong>+👤</strong> per creare nuovi account.</p>
+    <p class="muted small" style="margin:0">Suggerimento: mentre scrivi un task, premi <strong>Invio</strong> per confermare al volo.</p>
+  </div>
+  `,
+  en:`
+  <div class="card stack">
+    <h2 style="margin:0">🧭 Simple guide</h2>
+    <p class="muted" style="margin:0">Everything you need, in plain words. Don't worry: you can't break anything here.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">What is this place?</h3>
+    <p style="margin:0">Think of it as the group's <strong>shared whiteboard</strong>. Here we track <strong>who does what</strong>, leave each other <strong>notes</strong>, and keep the <strong>links to our tools</strong> tidy. Everyone only sees what concerns them.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Three words to know</h3>
+    <p style="margin:0"><strong>List</strong> = a folder for a project (e.g. <em>"Paper XYZ"</em>). It holds that project's tasks.</p>
+    <p style="margin:0"><strong>Task</strong> = one thing to do (e.g. <em>"write the intro"</em>). It has an owner and a status.</p>
+    <p style="margin:0"><strong>List people</strong> = <strong>Participants</strong> (do the work) and <strong>Watchers</strong> (only look, don't touch).</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">How do I…</h3>
+    <p style="margin:0"><strong>Create a work folder:</strong> go to <em>Lists &amp; Tasks</em> → <em>+ New list</em>, name it, confirm.</p>
+    <p style="margin:0"><strong>Invite colleagues:</strong> open the list → <em>Manage people</em> → pick the person and press <em>Add participant</em> (or <em>Add watcher</em>).</p>
+    <p style="margin:0"><strong>Assign a task:</strong> open the list → <em>+ New task</em>, write what's needed and choose who to assign it to. That person gets a notification (🔔 top bar) and an email.</p>
+    <p style="margin:0"><strong>Say "it's done":</strong> press <em>Mark done</em> on the task. If you like, the app offers to create the next step (e.g. <em>"review the text"</em>) already assigned to a colleague.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Task statuses (the coloured bar on the left)</h3>
+    <p style="margin:0"><span class="pill todo">To do</span> nobody started yet &nbsp;·&nbsp; <span class="pill in_progress">In progress</span> being worked on &nbsp;·&nbsp; <span class="pill done">Done</span> finished.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Notepad and Tools</h3>
+    <p style="margin:0"><strong>Notepad</strong> = a wall of notes visible to the whole group. Jot a thought, a reminder, an idea. You can edit or delete your own.</p>
+    <p style="margin:0"><strong>Tools</strong> = the address book of links to the apps/services we use, so nobody digs through emails anymore.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Who sees what? (the important bit)</h3>
+    <p style="margin:0"><strong>Only</strong> the people you add to a list can see it. If a colleague isn't a participant or watcher, that list simply <strong>doesn't exist</strong> for them. The Notepad and Tools, instead, are shared by everyone.</p>
+  </div>
+
+  <div class="card stack">
+    <h3 style="margin:0">Top-bar buttons</h3>
+    <p style="margin:0">🔔 your notifications &nbsp;·&nbsp; 🌙/☀️ dark or light theme &nbsp;·&nbsp; IT/EN language &nbsp;·&nbsp; ⎋ sign out. If you're the admin you also see <strong>+👤</strong> to create new accounts.</p>
+    <p class="muted small" style="margin:0">Tip: while writing a task, press <strong>Enter</strong> to confirm quickly.</p>
+  </div>
+  `
+};
+function renderGuide(){ const c=$("#panel-guide"); if(c) c.innerHTML=GUIDE[LANG]; }
 
 // ============================================================================
 //  State & Supabase client
@@ -301,7 +408,8 @@ function renderStatic(){
   $("#authTagline").textContent=t("tagline"); $("#lblEmail").textContent=t("email");
   $("#lblPassword").textContent=t("password"); $("#btnLogin").textContent=t("login");
   $("#email").placeholder="nome@dominio.it"; $("#password").placeholder="••••••••";
-  $("#tabLists").textContent=t("tabLists"); $("#tabNotes").textContent=t("tabNotes"); $("#tabTools").textContent=t("tabTools");
+  $("#tabLists").textContent=t("tabLists"); $("#tabNotes").textContent=t("tabNotes");
+  $("#tabTools").textContent=t("tabTools"); $("#tabGuide").textContent=t("tabGuide"); renderGuide();
   $("#btnNewList").textContent=t("newList");
   $("#noteTitle").placeholder=t("noteTitlePh"); $("#noteContent").placeholder=t("noteContentPh"); $("#btnAddNote").textContent=t("addNote");
   $("#toolName").placeholder=t("toolNamePh"); $("#toolUrl").placeholder=t("toolUrlPh");
@@ -775,7 +883,7 @@ function openNotifModal(){
 // ============================================================================
 function switchTab(tab){
   state.tab=tab;
-  ["lists","notes","tools"].forEach(x=>{
+  ["lists","notes","tools","guide"].forEach(x=>{
     $("#panel-"+x).classList.toggle("hidden",x!==tab);
     document.querySelector(`[data-tab="${x}"]`).classList.toggle("active",x===tab);
   });
