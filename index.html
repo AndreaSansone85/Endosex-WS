@@ -17,13 +17,13 @@
     --radius:14px;
   }
   html[data-theme="dark"]{
-    --bg:#16140e; --surface:#2f2a20; --surface-2:#3a3427; --border:#4b4335;
-    --text:#f0ebde; --text-soft:#b3a992; --accent:#8cc0b0; --accent-2:#e09a6e;
-    --accent-soft:#2c3b34;
-    --ok:#7cc199; --ok-soft:#26382d; --warn:#e0bd63; --warn-soft:#3f3722;
-    --danger:#e88a82; --danger-soft:#402a26;
-    --dot:rgba(235,225,195,.06);
-    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.32);
+    --bg:#191a1d; --surface:#232529; --surface-2:#2d2f34; --border:#3a3d43;
+    --text:#e9eaed; --text-soft:#a2a6ad; --accent:#7fbcae; --accent-2:#e3a276;
+    --accent-soft:#233230;
+    --ok:#7cc39a; --ok-soft:#213029; --warn:#e2c069; --warn-soft:#33301f;
+    --danger:#ea8a82; --danger-soft:#382725;
+    --dot:rgba(225,230,240,.05);
+    --shadow:0 1px 2px rgba(0,0,0,.45),0 8px 22px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -231,7 +231,7 @@ const I18N = {
     email:"Email", password:"Password", login:"Accedi", loggingIn:"Accesso…",
     tabLists:"Elenchi & Task", tabNotes:"Bloc Notes", tabTools:"Strumenti", tabGuide:"Guida facile",
     newList:"+ Nuovo elenco", noLists:"Nessun elenco visibile. Creane uno o chiedi di essere aggiunto.",
-    selectList:"Seleziona un elenco, oppure creane uno nuovo.",
+    selectList:"Seleziona un elenco a sinistra, oppure creane uno nuovo.",
     participants:"Partecipanti", watchers:"Spettatori", manageMembers:"Gestisci persone",
     addTask:"+ Nuovo task", noTasks:"Nessun task in questo elenco.",
     assignedTo:"Assegnato a", unassigned:"Non assegnato", createdBy:"Creato da",
@@ -356,7 +356,7 @@ const GUIDE = {
 
   <div class="card stack">
     <h3 style="margin:0">Bottoni in alto</h3>
-    <p style="margin:0">🔔 le tue notifiche &nbsp;·&nbsp; 🌙/☀️ tema scuro o chiaro &nbsp;·&nbsp; IT/EN lingua &nbsp;·&nbsp; ⎋ esci. Se sei l'amministratore vedi anche <strong>+👤</strong> per creare nuovi account.</p>
+    <p style="margin:0">🔔 le tue notifiche &nbsp;·&nbsp; 🌙/☀️ tema scuro o chiaro &nbsp;·&nbsp; IT/EN lingua &nbsp;·&nbsp; ⎋ esci. Se sei l'amministratore vedi anche <strong>+👤</strong> per creare nuovi account e <strong>🗂️</strong> per gestire tutti gli allegati (scaricarli o eliminarli).</p>
     <p class="muted small" style="margin:0">Suggerimento: mentre scrivi un task, premi <strong>Invio</strong> per confermare al volo.</p>
   </div>
   `,
@@ -405,7 +405,7 @@ const GUIDE = {
 
   <div class="card stack">
     <h3 style="margin:0">Top-bar buttons</h3>
-    <p style="margin:0">🔔 your notifications &nbsp;·&nbsp; 🌙/☀️ dark or light theme &nbsp;·&nbsp; IT/EN language &nbsp;·&nbsp; ⎋ sign out. If you're the admin you also see <strong>+👤</strong> to create new accounts.</p>
+    <p style="margin:0">🔔 your notifications &nbsp;·&nbsp; 🌙/☀️ dark or light theme &nbsp;·&nbsp; IT/EN language &nbsp;·&nbsp; ⎋ sign out. If you're the admin you also see <strong>+👤</strong> to create new accounts and <strong>🗂️</strong> to manage all attachments (download or delete them).</p>
     <p class="muted small" style="margin:0">Tip: while writing a task, press <strong>Enter</strong> to confirm quickly.</p>
   </div>
   `
