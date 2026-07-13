@@ -75,6 +75,14 @@
   .iconbtn{border:1px solid var(--border);background:var(--surface);border-radius:9px;
     width:38px;height:38px;display:grid;place-items:center;padding:0;font-size:1rem;position:relative}
   .iconbtn .badge{position:absolute;top:-6px;right:-6px}
+  /* Logo "EndoSexhub" */
+  .brandlogo{display:inline-flex;align-items:center;background:#000;border-radius:9px;
+    padding:.24rem .5rem;font-family:Arial,Helvetica,sans-serif;font-weight:800;
+    font-size:1.18rem;line-height:1;letter-spacing:-.5px;box-shadow:var(--shadow);flex:none}
+  .brandlogo .w{color:#fff}
+  .brandlogo .o{color:#000;background:#ff9000;border-radius:5px;padding:0 .26rem;margin-left:.14rem}
+  .brandsub{font-size:.95rem;color:var(--text-soft);font-weight:600;margin:0;font-family:var(--serif)}
+  @media(max-width:760px){ .brandlogo{font-size:1rem} .brandsub{display:none} }
 
   /* Layout */
   main{max-width:1100px;margin:0 auto;padding:1.1rem .9rem 4rem}
@@ -113,8 +121,8 @@
 
 <!-- ==================== TOP BAR ==================== -->
 <header id="topbar" class="hidden">
-  <div class="logo">ES</div>
-  <h1>The EndoSex Working Space</h1>
+  <span class="brandlogo"><span class="w">EndoSex</span><span class="o">hub</span></span>
+  <h1 class="brandsub">Working Space</h1>
   <div class="grow"></div>
   <button class="iconbtn hidden" id="btnNewUser" title="Nuovo account">+👤</button>
   <button class="iconbtn" id="btnLang" title="Language">IT</button>
@@ -126,7 +134,8 @@
 <!-- ==================== AUTH ==================== -->
 <div id="authView" class="auth-wrap">
   <div class="card auth-card stack">
-    <div class="row"><div class="logo">ES</div><h1 style="margin:0;font-size:1.05rem">The EndoSex Working Space</h1></div>
+    <div class="row"><span class="brandlogo"><span class="w">EndoSex</span><span class="o">hub</span></span></div>
+    <h1 style="margin:.1rem 0 0;font-size:1.05rem">The EndoSex Working Space</h1>
     <p class="muted small" id="authTagline"></p>
     <div>
       <label class="field" id="lblEmail">Email</label>
@@ -234,6 +243,8 @@ const I18N = {
     mUsernameLbl:"Username", mEmailLbl:"Email", mPasswordLbl:"Password (min. 6 caratteri)",
     mCreateAccount:"Crea account", accountCreated:"Account creato",
     accountHint:"La persona accede con questa email e password. Puoi comunicargliele; potrà usarle subito.",
+    attachments:"Allegati", addFile:"+ Allega file", download:"Scarica", uploading:"Caricamento…",
+    fileTooBig:"File troppo grande (max 25 MB).", confirmDelFile:"Eliminare questo allegato?",
   },
   en:{
     tagline:"Shared workspace of the research group. Sign in to continue.",
@@ -266,6 +277,8 @@ const I18N = {
     mUsernameLbl:"Username", mEmailLbl:"Email", mPasswordLbl:"Password (min. 6 chars)",
     mCreateAccount:"Create account", accountCreated:"Account created",
     accountHint:"The person signs in with this email and password. Share them; usable right away.",
+    attachments:"Attachments", addFile:"+ Attach file", download:"Download", uploading:"Uploading…",
+    fileTooBig:"File too large (max 25 MB).", confirmDelFile:"Delete this attachment?",
   }
 };
 let LANG = localStorage.getItem("ews_lang") || "it";
@@ -299,6 +312,7 @@ const GUIDE = {
     <p style="margin:0"><strong>Invitare colleghi:</strong> apri l'elenco → <em>Gestisci persone</em> → scegli la persona e premi <em>Aggiungi partecipante</em> (o <em>Aggiungi spettatore</em>).</p>
     <p style="margin:0"><strong>Assegnare un compito:</strong> apri l'elenco → <em>+ Nuovo task</em>, scrivi cosa serve e scegli a chi assegnarlo. Quella persona riceverà una notifica (campanella 🔔 in alto) e una mail.</p>
     <p style="margin:0"><strong>Dire "l'ho fatto":</strong> sul task premi <em>Segna completato</em>. Se vuoi, l'app ti propone subito di creare il passo successivo (es. <em>"revisiona il testo"</em>) già assegnato a un collega.</p>
+    <p style="margin:0"><strong>Allegare un file:</strong> sotto il task premi <em>+ Allega file</em> (se la funzione è attiva). Il file lo vedono e scaricano solo le persone dell'elenco.</p>
   </div>
 
   <div class="card stack">
@@ -347,6 +361,7 @@ const GUIDE = {
     <p style="margin:0"><strong>Invite colleagues:</strong> open the list → <em>Manage people</em> → pick the person and press <em>Add participant</em> (or <em>Add watcher</em>).</p>
     <p style="margin:0"><strong>Assign a task:</strong> open the list → <em>+ New task</em>, write what's needed and choose who to assign it to. That person gets a notification (🔔 top bar) and an email.</p>
     <p style="margin:0"><strong>Say "it's done":</strong> press <em>Mark done</em> on the task. If you like, the app offers to create the next step (e.g. <em>"review the text"</em>) already assigned to a colleague.</p>
+    <p style="margin:0"><strong>Attach a file:</strong> under the task press <em>+ Attach file</em> (if enabled). Only the list's people can see and download it.</p>
   </div>
 
   <div class="card stack">
@@ -379,7 +394,7 @@ function renderGuide(){ const c=$("#panel-guide"); if(c) c.innerHTML=GUIDE[LANG]
 // ============================================================================
 let sb = null;
 const state = { user:null, profile:null, profiles:{}, lists:[], currentListId:null,
-  tasks:[], members:[], notes:[], tools:[], notifications:[], tab:"lists" };
+  tasks:[], members:[], notes:[], tools:[], notifications:[], attachments:{}, tab:"lists" };
 
 const $ = s => document.querySelector(s);
 const el = (tag, props={}, html) => { const e=document.createElement(tag); Object.assign(e,props); if(html!=null)e.innerHTML=html; return e; };
@@ -483,12 +498,14 @@ function renderLists(){
 
 async function selectList(id, keep){
   state.currentListId=id;
-  const [{data:members},{data:tasks}] = await Promise.all([
+  const [{data:members},{data:tasks},{data:atts}] = await Promise.all([
     sb.from("list_members").select("*").eq("list_id",id),
-    sb.from("tasks").select("*").eq("list_id",id).order("created_at",{ascending:true})
+    sb.from("tasks").select("*").eq("list_id",id).order("created_at",{ascending:true}),
+    sb.from("attachments").select("*").eq("list_id",id).order("created_at",{ascending:true})
   ]);
   state.members=members||[]; state.tasks=tasks||[];
-  if(!keep){} renderLists(); renderListDetail();
+  state.attachments={}; (atts||[]).forEach(a=>{ (state.attachments[a.task_id]=state.attachments[a.task_id]||[]).push(a); });
+  renderLists(); renderListDetail();
 }
 
 function myRoleInCurrent(){
@@ -568,7 +585,54 @@ function renderTask(tk, canEdit){
     bar.appendChild(mkBtn(t("edit"),"tiny",()=>openTaskModal(tk)));
     bar.appendChild(mkBtn(t("del"),"tiny",()=>deleteTask(tk)));
   }
+  // allegati
+  const atts=state.attachments[tk.id]||[];
+  if(atts.length || canEdit){
+    const ab=el("div",{className:"stack"}); ab.style.cssText="margin-top:.55rem;gap:.3rem;border-top:1px dashed var(--border);padding-top:.5rem";
+    if(atts.length) ab.appendChild(el("div",{className:"small muted"},"📎 "+t("attachments")));
+    atts.forEach(a=>{
+      const row=el("div",{className:"row small",style:"gap:.4rem;justify-content:space-between"});
+      const link=el("a",{href:"#"}); link.innerHTML=`📄 ${esc(a.filename)} <span class="muted">(${fmtSize(a.size)})</span>`;
+      link.onclick=e=>{ e.preventDefault(); downloadAttachment(a); };
+      row.appendChild(link);
+      if(canEdit){ const d=el("button",{className:"tiny ghost",title:t("del")},"✕"); d.onclick=()=>deleteAttachment(a); row.appendChild(d); }
+      ab.appendChild(row);
+    });
+    if(canEdit){
+      const up=el("label",{className:"tiny",style:"display:inline-flex;align-items:center;gap:.3rem;cursor:pointer;border:1px solid var(--border);border-radius:8px;padding:.28rem .55rem;width:max-content"});
+      up.append(t("addFile"));
+      const inp=el("input",{type:"file"}); inp.style.display="none";
+      inp.onchange=()=>{ if(inp.files[0]) uploadAttachment(tk, inp.files[0]); };
+      up.appendChild(inp); ab.appendChild(up);
+    }
+    wrap.appendChild(ab);
+  }
   return wrap;
+}
+function fmtSize(b){ if(b==null) return "?"; if(b<1024) return b+" B";
+  if(b<1048576) return (b/1024).toFixed(0)+" KB"; return (b/1048576).toFixed(1)+" MB"; }
+async function uploadAttachment(tk, file){
+  if(file.size > 25*1024*1024){ toast(t("fileTooBig")); return; }
+  toast(t("uploading"));
+  const safe=file.name.replace(/[^\w.\-]+/g,"_");
+  const path=`${tk.list_id}/${tk.id}/${crypto.randomUUID()}_${safe}`;
+  const { error:upErr }=await sb.storage.from("attachments").upload(path, file, { contentType:file.type||undefined });
+  if(upErr){ toast(upErr.message); return; }
+  const { error:insErr }=await sb.from("attachments").insert({ task_id:tk.id, list_id:tk.list_id,
+    path, filename:file.name, size:file.size, mime:file.type||null, uploaded_by:state.user.id });
+  if(insErr){ toast(insErr.message); return; }
+  await selectList(state.currentListId,true);
+}
+async function downloadAttachment(a){
+  const { data, error }=await sb.storage.from("attachments").createSignedUrl(a.path, 60);
+  if(error){ toast(error.message); return; }
+  window.open(data.signedUrl, "_blank");
+}
+async function deleteAttachment(a){
+  if(!confirm(t("confirmDelFile"))) return;
+  await sb.storage.from("attachments").remove([a.path]);
+  await sb.from("attachments").delete().eq("id",a.id);
+  await selectList(state.currentListId,true);
 }
 const mkBtn=(label,cls,fn)=>{ const b=el("button",{className:cls},esc(label)); b.onclick=fn; return b; };
 
