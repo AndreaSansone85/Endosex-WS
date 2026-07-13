@@ -85,7 +85,13 @@
   .hdr-side{flex:1;display:flex;align-items:center;gap:.45rem}
   .hdr-side.right{justify-content:flex-end;flex-wrap:wrap}
   .hdr-center{flex:0 0 auto;display:flex;justify-content:center}
-  @media(max-width:760px){ .brandlogo{font-size:1rem} .brandlogo.big{font-size:1.8rem} }
+  @media(max-width:760px){
+    .brandlogo{font-size:1.3rem} .brandlogo.big{font-size:1.8rem}
+    header{flex-direction:column;gap:.45rem}
+    .hdr-side.left{display:none}
+    .hdr-center{width:100%;justify-content:center}
+    .hdr-side.right{flex:none;width:100%;justify-content:center;flex-wrap:wrap;gap:.5rem}
+  }
 
   /* Layout */
   main{max-width:1100px;margin:0 auto;padding:1.1rem .9rem 4rem}
