@@ -81,8 +81,11 @@
     font-size:1.18rem;line-height:1;letter-spacing:-.5px;box-shadow:var(--shadow);flex:none}
   .brandlogo .w{color:#fff}
   .brandlogo .o{color:#000;background:#ff9000;border-radius:5px;padding:0 .26rem;margin-left:.14rem}
-  .brandsub{font-size:.95rem;color:var(--text-soft);font-weight:600;margin:0;font-family:var(--serif)}
-  @media(max-width:760px){ .brandlogo{font-size:1rem} .brandsub{display:none} }
+  .brandlogo.big{font-size:2.4rem;padding:.45rem .9rem;border-radius:14px}
+  .hdr-side{flex:1;display:flex;align-items:center;gap:.45rem}
+  .hdr-side.right{justify-content:flex-end;flex-wrap:wrap}
+  .hdr-center{flex:0 0 auto;display:flex;justify-content:center}
+  @media(max-width:760px){ .brandlogo{font-size:1rem} .brandlogo.big{font-size:1.8rem} }
 
   /* Layout */
   main{max-width:1100px;margin:0 auto;padding:1.1rem .9rem 4rem}
@@ -121,21 +124,23 @@
 
 <!-- ==================== TOP BAR ==================== -->
 <header id="topbar" class="hidden">
-  <span class="brandlogo"><span class="w">EndoSex</span><span class="o">hub</span></span>
-  <h1 class="brandsub">Working Space</h1>
-  <div class="grow"></div>
-  <button class="iconbtn hidden" id="btnNewUser" title="Nuovo account">+👤</button>
-  <button class="iconbtn" id="btnLang" title="Language">IT</button>
-  <button class="iconbtn" id="btnTheme" title="Theme">🌙</button>
-  <button class="iconbtn" id="btnNotif" title="Notifiche">🔔<span class="badge hidden" id="notifCount">0</span></button>
-  <button class="iconbtn" id="btnLogout" title="Logout">⎋</button>
+  <div class="hdr-side left"></div>
+  <div class="hdr-center"><span class="brandlogo"><span class="w">EndoSex</span><span class="o">hub</span></span></div>
+  <div class="hdr-side right">
+    <button class="iconbtn hidden" id="btnAttAdmin" title="Allegati (admin)">🗂️</button>
+    <button class="iconbtn hidden" id="btnNewUser" title="Nuovo account">+👤</button>
+    <button class="iconbtn" id="btnLang" title="Language">IT</button>
+    <button class="iconbtn" id="btnTheme" title="Theme">🌙</button>
+    <button class="iconbtn" id="btnNotif" title="Notifiche">🔔<span class="badge hidden" id="notifCount">0</span></button>
+    <button class="iconbtn" id="btnLogout" title="Logout">⎋</button>
+  </div>
 </header>
 
 <!-- ==================== AUTH ==================== -->
 <div id="authView" class="auth-wrap">
   <div class="card auth-card stack">
-    <div class="row"><span class="brandlogo"><span class="w">EndoSex</span><span class="o">hub</span></span></div>
-    <h1 style="margin:.1rem 0 0;font-size:1.05rem">The EndoSex Working Space</h1>
+    <div class="row" style="justify-content:center;margin-top:.4rem"><span class="brandlogo big"><span class="w">EndoSex</span><span class="o">hub</span></span></div>
+    <h1 style="margin:.4rem 0 0;font-size:1.1rem;text-align:center">The EndoSex Working Space</h1>
     <p class="muted small" id="authTagline"></p>
     <div>
       <label class="field" id="lblEmail">Email</label>
@@ -160,6 +165,7 @@
     <button data-tab="lists" class="active" id="tabLists"></button>
     <button data-tab="notes" id="tabNotes"></button>
     <button data-tab="tools" id="tabTools"></button>
+    <button data-tab="archived" id="tabArchived"></button>
     <button data-tab="guide" id="tabGuide"></button>
   </nav>
 
@@ -196,6 +202,9 @@
     </div>
     <div class="stack" id="toolsContainer"></div>
   </section>
+
+  <!-- TAB: ARCHIVED -->
+  <section id="panel-archived" class="hidden stack"></section>
 
   <!-- TAB: GUIDE -->
   <section id="panel-guide" class="hidden stack"></section>
@@ -245,6 +254,10 @@ const I18N = {
     accountHint:"La persona accede con questa email e password. Puoi comunicargliele; potrà usarle subito.",
     attachments:"Allegati", addFile:"+ Allega file", download:"Scarica", uploading:"Caricamento…",
     fileTooBig:"File troppo grande (max 25 MB).", confirmDelFile:"Eliminare questo allegato?",
+    tabArchived:"Archiviati", archive:"Archivia", unarchive:"Ripristina",
+    confirmArchive:"Archiviare questo elenco?", archivedEmpty:"Nessun elenco archiviato.",
+    attAdminTitle:"Pannello allegati (admin)", attEmpty:"Nessun allegato.", inList:"Elenco",
+    moveUp:"Sposta su", moveDown:"Sposta giù", by:"di",
   },
   en:{
     tagline:"Shared workspace of the research group. Sign in to continue.",
@@ -279,6 +292,10 @@ const I18N = {
     accountHint:"The person signs in with this email and password. Share them; usable right away.",
     attachments:"Attachments", addFile:"+ Attach file", download:"Download", uploading:"Uploading…",
     fileTooBig:"File too large (max 25 MB).", confirmDelFile:"Delete this attachment?",
+    tabArchived:"Archived", archive:"Archive", unarchive:"Restore",
+    confirmArchive:"Archive this list?", archivedEmpty:"No archived lists.",
+    attAdminTitle:"Attachments panel (admin)", attEmpty:"No attachments.", inList:"List",
+    moveUp:"Move up", moveDown:"Move down", by:"by",
   }
 };
 let LANG = localStorage.getItem("ews_lang") || "it";
@@ -424,7 +441,8 @@ function renderStatic(){
   $("#lblPassword").textContent=t("password"); $("#btnLogin").textContent=t("login");
   $("#email").placeholder="nome@dominio.it"; $("#password").placeholder="••••••••";
   $("#tabLists").textContent=t("tabLists"); $("#tabNotes").textContent=t("tabNotes");
-  $("#tabTools").textContent=t("tabTools"); $("#tabGuide").textContent=t("tabGuide"); renderGuide();
+  $("#tabTools").textContent=t("tabTools"); $("#tabArchived").textContent=t("tabArchived");
+  $("#tabGuide").textContent=t("tabGuide"); renderGuide();
   $("#btnNewList").textContent=t("newList");
   $("#noteTitle").placeholder=t("noteTitlePh"); $("#noteContent").placeholder=t("noteContentPh"); $("#btnAddNote").textContent=t("addNote");
   $("#toolName").placeholder=t("toolNamePh"); $("#toolUrl").placeholder=t("toolUrlPh");
@@ -460,6 +478,7 @@ async function onSignedIn(){
   $("#topbar").classList.remove("hidden");
   $("#appView").classList.remove("hidden");
   $("#btnNewUser").classList.toggle("hidden", state.profile?.role!=="admin");
+  $("#btnAttAdmin").classList.toggle("hidden", state.profile?.role!=="admin");
   await loadProfiles();
   await loadLists();
   await loadNotes();
@@ -477,7 +496,8 @@ async function loadProfiles(){
 //  Lists & members
 // ============================================================================
 async function loadLists(){
-  const { data } = await sb.from("task_lists").select("*").order("updated_at",{ascending:false});
+  const { data } = await sb.from("task_lists").select("*").eq("archived",false)
+    .order("position",{ascending:true}).order("updated_at",{ascending:false});
   state.lists = data||[];
   if(state.currentListId && !state.lists.find(l=>l.id===state.currentListId)) state.currentListId=null;
   renderLists();
@@ -488,12 +508,36 @@ async function loadLists(){
 function renderLists(){
   const c=$("#listsContainer"); if(!c) return; c.innerHTML="";
   if(!state.lists.length){ c.appendChild(el("p",{className:"muted small"},esc(t("noLists")))); return; }
-  state.lists.forEach(l=>{
-    const b=el("button",{className:"card listitem"+(l.id===state.currentListId?" active":"")});
-    b.innerHTML=`<strong>${esc(l.title)}</strong>${l.description?`<span class="small muted">${esc(l.description)}</span>`:""}`;
-    b.onclick=()=>selectList(l.id);
-    c.appendChild(b);
+  state.lists.forEach((l,idx)=>{
+    const card=el("div",{className:"card listitem"+(l.id===state.currentListId?" active":"")});
+    const rowWrap=el("div",{className:"row",style:"width:100%;gap:.4rem;align-items:center"});
+    const main=el("div",{className:"grow",style:"cursor:pointer;min-width:0"});
+    main.innerHTML=`<strong>${esc(l.title)}</strong>${l.description?`<br><span class="small muted">${esc(l.description)}</span>`:""}`;
+    main.onclick=()=>selectList(l.id);
+    const arrows=el("div",{className:"stack",style:"gap:.1rem;flex:none"});
+    const up=el("button",{className:"tiny ghost",title:t("moveUp")},"▲"); up.disabled=idx===0; up.onclick=()=>moveList(l,-1);
+    const dn=el("button",{className:"tiny ghost",title:t("moveDown")},"▼"); dn.disabled=idx===state.lists.length-1; dn.onclick=()=>moveList(l,1);
+    arrows.appendChild(up); arrows.appendChild(dn);
+    rowWrap.appendChild(main); rowWrap.appendChild(arrows);
+    card.appendChild(rowWrap);
+    c.appendChild(card);
   });
+}
+async function moveList(list, dir){
+  const ordered=state.lists;
+  const i=ordered.findIndex(l=>l.id===list.id); const j=dir<0?i-1:i+1;
+  if(j<0||j>=ordered.length) return;
+  const a=ordered[i], b=ordered[j];
+  const pa=a.position??0, pb=b.position??0;
+  if(pa===pb){
+    await Promise.all(ordered.map((l,idx)=> sb.from("task_lists").update({position:idx}).eq("id",l.id)));
+    await Promise.all([ sb.from("task_lists").update({position:j}).eq("id",a.id),
+                       sb.from("task_lists").update({position:i}).eq("id",b.id) ]);
+  } else {
+    await Promise.all([ sb.from("task_lists").update({position:pb}).eq("id",a.id),
+                       sb.from("task_lists").update({position:pa}).eq("id",b.id) ]);
+  }
+  await loadLists();
 }
 
 async function selectList(id, keep){
@@ -535,6 +579,7 @@ function renderListDetail(){
       ${canEdit?`<button class="tiny" id="dBtnMembers">${t("manageMembers")}</button>`:""}
       ${canEdit?`<button class="tiny primary" id="dBtnAddTask">${t("addTask")}</button>`:""}
       ${canEdit?`<button class="tiny" id="dBtnRename">${t("editList")}</button>`:""}
+      ${canEdit?`<button class="tiny" id="dBtnArchive">${t("archive")}</button>`:""}
       ${(list.created_by===state.user.id||state.profile?.role==="admin")?`<button class="tiny" id="dBtnDelList" style="color:var(--danger)">${t("deleteList")}</button>`:""}
     </div>`;
   d.appendChild(head);
@@ -542,6 +587,7 @@ function renderListDetail(){
     head.querySelector("#dBtnMembers").onclick=openMembersModal;
     head.querySelector("#dBtnAddTask").onclick=()=>openTaskModal();
     head.querySelector("#dBtnRename").onclick=()=>openListModal(list);
+    head.querySelector("#dBtnArchive").onclick=()=>archiveList(list);
     const delB=head.querySelector("#dBtnDelList"); if(delB) delB.onclick=()=>deleteList(list);
   }
 
@@ -595,7 +641,7 @@ function renderTask(tk, canEdit){
       const link=el("a",{href:"#"}); link.innerHTML=`📄 ${esc(a.filename)} <span class="muted">(${fmtSize(a.size)})</span>`;
       link.onclick=e=>{ e.preventDefault(); downloadAttachment(a); };
       row.appendChild(link);
-      if(canEdit){ const d=el("button",{className:"tiny ghost",title:t("del")},"✕"); d.onclick=()=>deleteAttachment(a); row.appendChild(d); }
+      if(state.profile?.role==="admin"){ const d=el("button",{className:"tiny ghost",title:t("del")},"✕"); d.onclick=()=>deleteAttachment(a); row.appendChild(d); }
       ab.appendChild(row);
     });
     if(canEdit){
@@ -631,8 +677,9 @@ async function downloadAttachment(a){
 async function deleteAttachment(a){
   if(!confirm(t("confirmDelFile"))) return;
   await sb.storage.from("attachments").remove([a.path]);
-  await sb.from("attachments").delete().eq("id",a.id);
-  await selectList(state.currentListId,true);
+  const { error }=await sb.from("attachments").delete().eq("id",a.id);
+  if(error){ toast(error.message); return; }
+  if(state.currentListId) await selectList(state.currentListId,true);
 }
 const mkBtn=(label,cls,fn)=>{ const b=el("button",{className:cls},esc(label)); b.onclick=fn; return b; };
 
@@ -660,6 +707,42 @@ async function deleteList(list){
   const { error } = await sb.from("task_lists").delete().eq("id",list.id);
   if(error) return toast(error.message);
   state.currentListId=null; await loadLists();
+}
+async function archiveList(list){
+  if(!confirm(t("confirmArchive"))) return;
+  const { error } = await sb.from("task_lists").update({archived:true}).eq("id",list.id);
+  if(error) return toast(error.message);
+  state.currentListId=null; await loadLists();
+}
+async function unarchiveList(l){
+  const { error } = await sb.from("task_lists").update({archived:false}).eq("id",l.id);
+  if(error) return toast(error.message);
+  await loadArchived(); await loadLists();
+}
+async function loadArchived(){
+  const c=$("#panel-archived"); if(!c) return;
+  const { data:lists } = await sb.from("task_lists").select("*").eq("archived",true).order("updated_at",{ascending:false});
+  const arch=lists||[]; c.innerHTML="";
+  if(!arch.length){ c.appendChild(el("div",{className:"card muted small"},esc(t("archivedEmpty")))); return; }
+  for(const l of arch){
+    const card=el("div",{className:"card stack"});
+    card.innerHTML=`<div class="row wrap" style="justify-content:space-between">
+        <div><h3 style="margin:0">${esc(l.title)}</h3>${l.description?`<div class="muted small">${esc(l.description)}</div>`:""}</div>
+      </div>`;
+    const { data:tasks } = await sb.from("tasks").select("*").eq("list_id",l.id).order("created_at",{ascending:true});
+    const tl=el("div",{className:"stack",style:"gap:.3rem"});
+    (tasks||[]).forEach(tk=>{
+      const sl = tk.status==="todo"?t("statusTodo"):tk.status==="in_progress"?t("statusProgress"):t("statusDone");
+      const r=el("div",{className:"row small",style:"gap:.4rem;justify-content:space-between"});
+      r.innerHTML=`<span>${esc(tk.title)}${tk.assigned_to?` <span class="muted">· ${esc(nameOf(tk.assigned_to))}</span>`:""}</span><span class="pill ${tk.status}">${sl}</span>`;
+      tl.appendChild(r);
+    });
+    if(!(tasks||[]).length) tl.appendChild(el("div",{className:"muted small"},esc(t("noTasks"))));
+    card.appendChild(tl);
+    const bar=el("div",{className:"row"}); bar.appendChild(mkBtn(t("unarchive"),"tiny primary",()=>unarchiveList(l)));
+    card.appendChild(bar);
+    c.appendChild(card);
+  }
 }
 
 // ============================================================================
@@ -818,6 +901,37 @@ function openNewUserModal(){
 }
 
 // ============================================================================
+//  Pannello di controllo di TUTTI gli allegati (solo admin)
+// ============================================================================
+async function openAttachmentsAdminModal(){
+  if(state.profile?.role!=="admin") return;
+  const m=openModal(`
+    <div class="row" style="justify-content:space-between"><h3 style="margin:0">${t("attAdminTitle")}</h3></div>
+    <div class="stack" id="attAdminList"><span class="muted small">…</span></div>
+    <div class="row" style="justify-content:flex-end"><button class="ghost" id="mClose">${t("mCancel")}</button></div>`);
+  m.querySelector("#mClose").onclick=closeModal;
+  const [{ data:atts },{ data:allLists }] = await Promise.all([
+    sb.from("attachments").select("*").order("created_at",{ascending:false}),
+    sb.from("task_lists").select("id,title")
+  ]);
+  const listMap={}; (allLists||[]).forEach(l=>listMap[l.id]=l.title);
+  const cont=m.querySelector("#attAdminList"); cont.innerHTML="";
+  if(!atts||!atts.length){ cont.appendChild(el("div",{className:"muted small"},esc(t("attEmpty")))); return; }
+  atts.forEach(a=>{
+    const row=el("div",{className:"card",style:"padding:.55rem"});
+    row.innerHTML=`<div class="row" style="justify-content:space-between;gap:.5rem">
+        <div style="min-width:0"><div><strong>${esc(a.filename)}</strong> <span class="muted small">(${fmtSize(a.size)})</span></div>
+          <div class="muted small">${t("inList")}: ${esc(listMap[a.list_id]||"—")} · ${t("by")} ${esc(nameOf(a.uploaded_by))} · ${fmt(a.created_at)}</div></div>
+        <div class="row bar" style="gap:.3rem;flex:none"></div>
+      </div>`;
+    const bar=row.querySelector(".bar");
+    bar.appendChild(mkBtn(t("download"),"tiny",()=>downloadAttachment(a)));
+    bar.appendChild(mkBtn(t("del"),"tiny",async()=>{ await deleteAttachment(a); openAttachmentsAdminModal(); }));
+    cont.appendChild(row);
+  });
+}
+
+// ============================================================================
 //  Notes
 // ============================================================================
 async function loadNotes(){
@@ -947,10 +1061,11 @@ function openNotifModal(){
 // ============================================================================
 function switchTab(tab){
   state.tab=tab;
-  ["lists","notes","tools","guide"].forEach(x=>{
+  ["lists","notes","tools","archived","guide"].forEach(x=>{
     $("#panel-"+x).classList.toggle("hidden",x!==tab);
     document.querySelector(`[data-tab="${x}"]`).classList.toggle("active",x===tab);
   });
+  if(tab==="archived") loadArchived();
 }
 
 // ============================================================================
@@ -964,6 +1079,7 @@ function wire(){
   $("#btnLang").onclick=toggleLang; $("#authLang").onclick=toggleLang;
   $("#btnNotif").onclick=openNotifModal;
   $("#btnNewUser").onclick=openNewUserModal;
+  $("#btnAttAdmin").onclick=openAttachmentsAdminModal;
   $("#btnNewList").onclick=()=>openListModal(null);
   $("#btnAddNote").onclick=addNote;
   $("#btnAddTool").onclick=addTool;
